@@ -24,6 +24,8 @@ public class SVDModel implements Serializable {
     private final RealMatrix itemFeatureMatrix;
     private final RealVector featureWeights;
     private final HashMap<Long, Double> itemPopularity;
+    private final double popularityWeight;
+
     /**
      * Construct an SVD model.  The matrices represent the decomposition, such that the predictions
      * are equal to {@code umat * weights * imat.transpose()}.
@@ -34,7 +36,7 @@ public class SVDModel implements Serializable {
      * @param weights The singular values.
      * @param itemPopularity1
      */
-    SVDModel(KeyIndex umap, KeyIndex imap, RealMatrix umat, RealMatrix imat, RealVector weights, HashMap<Long, Double> itemPopularity1) {
+    SVDModel(KeyIndex umap, KeyIndex imap, RealMatrix umat, RealMatrix imat, RealVector weights, HashMap<Long, Double> itemPopularity1, double popWeight) {
         Preconditions.checkArgument(umat.getColumnDimension() == weights.getDimension(),
                 "user matrix has incorrect column dimension (%s != %s)",
                 umat.getColumnDimension(), weights.getDimension());
@@ -47,6 +49,7 @@ public class SVDModel implements Serializable {
         itemFeatureMatrix = imat;
         featureWeights = weights;
         itemPopularity = itemPopularity1;
+        popularityWeight = popWeight;
     }
 
     /**
@@ -63,6 +66,8 @@ public class SVDModel implements Serializable {
             pop = 0.0;
         return pop;
     }
+
+    public double getPopularityWeight(){ return popularityWeight;}
 
     /**
      * Get a user feature vector. This is a row vector whose values (columns) are the feature

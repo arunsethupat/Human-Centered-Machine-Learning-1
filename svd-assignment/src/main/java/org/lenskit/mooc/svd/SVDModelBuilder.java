@@ -42,7 +42,7 @@ public class SVDModelBuilder implements Provider<SVDModel> {
         this.dao = dao;
         baseline = bias;
         featureCount = 25;
-        popularityWeight = popWeight/100;
+        popularityWeight = popWeight/100.0;
     }
 
     /**
@@ -79,7 +79,7 @@ public class SVDModelBuilder implements Provider<SVDModel> {
 
         return new SVDModel(userIndex, itemIndex,
                 userMatrix, itemMatrix,
-                weights, itemPopularity);
+                weights, itemPopularity, popularityWeight);
     }
     public HashMap<Long, Double> calculateItemPopularity(){
         HashMap<Long, Double> itemPop = new HashMap<>();
@@ -99,10 +99,7 @@ public class SVDModelBuilder implements Provider<SVDModel> {
                     minPop = count+1;
                 itemPop.put(itemId, count + 1);
             }
-            int x=0;
             for(Map.Entry<Long, Double> itemPopPair : itemPop.entrySet()){
-                if(itemPopPair.getKey() == 296)
-                    x =0;
                 double normalizedPop = (itemPopPair.getValue() - minPop) / (maxPop - minPop) * 5;
                 itemPopPair.setValue(normalizedPop);
             }

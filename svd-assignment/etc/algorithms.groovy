@@ -9,9 +9,9 @@ import org.lenskit.transform.normalize.VectorNormalizer
 
 
 // test different SVD sizes
-for (popWeight in [0, 20, 30, 40, 50]) {
+for (popWeight in [0, 10, 20, 30, 40, 50]) {
     algorithm("SVD") {
-        attributes["PopularityWeight"] = popWeight
+        attributes["PopularityWeight"] = popWeight/100.0
         attributes["Bias"] = "global"
         bind ItemScorer to SVDItemScorer
         set PopularityWeight to popWeight

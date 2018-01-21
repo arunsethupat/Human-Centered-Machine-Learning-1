@@ -162,6 +162,7 @@ task evaluate(type: TrainTest, group: 'evaluate') {
         metric 'ndcg'
         metric 'map'
         metric 'mrr'
+        metric 'org.lenskit.mooc.svd.ILSMetric'
     }
 }
 

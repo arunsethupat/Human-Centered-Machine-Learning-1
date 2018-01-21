@@ -111,8 +111,14 @@ public class ConsoleRunner implements Runnable {
                 LongSet userRatedItems = trainDao.query(Rating.class).withAttribute(CommonAttributes.USER_ID, testUser).valueSet(CommonAttributes.ITEM_ID);
                 System.out.format("Recommendations for user %d:\n", testUser);
                 ResultList recs = irec.recommendWithDetails(testUser, 10, null, userRatedItems);
+                displayRecommendations(recs);
                 System.out.println("-------------------------------------------");
             }
+        }
+    }
+    private void displayRecommendations (ResultList recs){
+        for(Result res : recs){
+            System.out.println("Movie Id : "+res.getId() + "\tScore : "+res.getScore());
         }
     }
 }

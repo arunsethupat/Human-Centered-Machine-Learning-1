@@ -45,6 +45,10 @@ public class SVDItemScorer extends AbstractItemScorer {
         this.dao = dao;
     }
 
+    public SVDModel getModel() {
+        return model;
+    }
+
     /**
      * Score items in a vector. The key domain of the provided vector is the
      * items to score, and the score method sets the values for each item to
