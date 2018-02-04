@@ -66,12 +66,12 @@ public class ILSMetric extends ListOnlyTopNMetric<ILSMetric.Context> {
     @Override
     synchronized public MetricResult getAggregateMeasurements(ILSMetric.Context context) {
 //        SVDModel model = ((SVDItemScorer)context.recommender.getItemScorer()).getModel();
-        SVDModel model = context.recommender.get(SVDModel.class);
-        //writeItemRecFrequency(model);
-        Double keyPopWeight = model.getPopularityWeight();
-        System.out.println("Total Items : "+popWeightToItemRecFreq.get(keyPopWeight).size() + "for pop weight : "+keyPopWeight);
-        System.out.println("Removing item recommendation hashmap for pop weight : "+keyPopWeight);
-        popWeightToItemRecFreq.remove(keyPopWeight);
+//        SVDModel model = context.recommender.get(SVDModel.class);
+//        writeItemRecFrequency(model);
+//        Double keyPopWeight = model.getPopularityWeight();
+//        System.out.println("Total Items : "+popWeightToItemRecFreq.get(keyPopWeight).size() + "for pop weight : "+keyPopWeight);
+//        System.out.println("Removing item recommendation hashmap for pop weight : "+keyPopWeight);
+//        popWeightToItemRecFreq.remove(keyPopWeight);
         return new ILSMetric.AggregateResult(context);
     }
 
@@ -79,7 +79,7 @@ public class ILSMetric extends ListOnlyTopNMetric<ILSMetric.Context> {
     @Override
     public MetricResult measureUser(TestUser user, int targetLength, LongList recommendations, Context context) {
         SVDModel model = context.recommender.get(SVDModel.class);
-        System.out.println("measureUser :: pop weight : "+model.getPopularityWeight());
+//        System.out.println("measureUser :: pop weight : "+model.getPopularityWeight());
         Double cosine = 0.0;
         for(Long item1 : recommendations){
             for(Long item2 : recommendations){
@@ -88,7 +88,7 @@ public class ILSMetric extends ListOnlyTopNMetric<ILSMetric.Context> {
                 cosine += calculateCosineSimilarity(item1Vec, item2Vec);
             }
 
-            updateRecFrequency(item1, model);
+//            updateRecFrequency(item1, model);
         }
         cosine/=2;
         ILSMetric.UserResult result = new ILSMetric.UserResult(cosine);

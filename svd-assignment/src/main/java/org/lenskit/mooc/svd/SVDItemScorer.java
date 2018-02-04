@@ -78,7 +78,8 @@ public class SVDItemScorer extends AbstractItemScorer {
             double predictedVal = userFeatures.ebeMultiply(model.getFeatureWeights()).dotProduct(itemFeatures);
             //adding baseline
             predictedVal+=(baseline.getIntercept() + baseline.getUserBias(user) + baseline.getItemBias(item));
-            results.add(new BasicResult(item, predictedVal));
+            double popBlendedRating = (1 - model.getPopularityWeight())*predictedVal + model.getPopularityWeight()*model.getItemPopularity(item);
+            results.add(new BasicResult(item, popBlendedRating));
         }
 //        ResultList orderedList = getTopNResults(10, results);
 //        for(Result res : orderedList) {

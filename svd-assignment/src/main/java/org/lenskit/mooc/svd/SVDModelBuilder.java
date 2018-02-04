@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,6 +45,7 @@ public class SVDModelBuilder implements Provider<SVDModel> {
         baseline = bias;
         featureCount = 25;
         popularityWeight = popWeight/100.0;
+        System.out.println("Popularity Weight Set to : "+popularityWeight);
     }
 
     /**
@@ -58,6 +61,7 @@ public class SVDModelBuilder implements Provider<SVDModel> {
         KeyIndex itemIndex = FrozenHashKeyIndex.create(dao.getEntityIds(CommonTypes.ITEM));
 
         HashMap<Long, Double> itemPopularity =  calculateItemPopularity();
+        writeItemPopularity(itemPopularity);
         RealMatrix matrix = createRatingMatrix(userIndex, itemIndex, itemPopularity);
 
         // Second, compute its factorization
@@ -76,6 +80,21 @@ public class SVDModelBuilder implements Provider<SVDModel> {
             itemMatrix = itemMatrix.getSubMatrix(0, itemMatrix.getRowDimension()-1, 0, featureCount-1);
             weights = weights.getSubVector(0, featureCount);
         }
+//        System.out.format("User Matrix 10 x %d\n", featureCount);
+//        for(int i=0; i<10; i++){
+//            for(int j=0; j<featureCount; j++){
+//                System.out.print(userMatrix.getEntry(i, j)+" ");
+//            }
+//            System.out.println();
+//        }
+//
+//        System.out.format("Item Matrix 10 x %d \n", featureCount);
+//        for(int i=0; i<10; i++){
+//            for(int j=0; j<featureCount; j++){
+//                System.out.print(itemMatrix.getEntry(i, j)+" ");
+//            }
+//            System.out.println();
+//        }
 
         return new SVDModel(userIndex, itemIndex,
                 userMatrix, itemMatrix,
@@ -134,11 +153,46 @@ public class SVDModelBuilder implements Provider<SVDModel> {
                     double bias = baseline.getIntercept() + baseline.getUserBias(rating.getUserId()) + baseline.getItemBias(rating.getItemId());
                     normVal = normVal - bias;
                 }
-                Double pop = itemPop.get(rating.getItemId());
-                normVal = (1-popularityWeight)*normVal + popularityWeight*pop;
+//                Double pop = itemPop.get(rating.getItemId());
+//                normVal = (1-popularityWeight)*normVal + popularityWeight*pop;
                 matrix.setEntry(uIndex, iIndex, normVal);
             }
         }
         return matrix;
+    }
+
+    private void writeItemPopularity(HashMap<Long, Double> itemPopularity){
+        System.out.println("Dumping item popularity into CSV ...");
+        final String FILE_HEADER = "MovieId,Popularity";
+        final String NEW_LINE_SEPARATOR = "\n";
+        FileWriter writer = null;
+        String freqFileName = "itemPopularity.csv";
+        try {
+            writer = new FileWriter(freqFileName, true);
+            writer.append(FILE_HEADER);
+            writer.append(NEW_LINE_SEPARATOR);
+            for(Map.Entry<Long, Double> itemEntry : itemPopularity.entrySet()){
+                Long item = itemEntry.getKey();
+                Double pop = itemEntry.getValue();
+
+                writer.append(String.valueOf(item));
+                writer.append(",");
+                writer.append(String.valueOf(pop));
+                writer.append(",");
+                writer.append(NEW_LINE_SEPARATOR);
+
+            }
+        } catch (Exception e) {
+            System.out.println("Error in CsvFileWriter !!!");
+            e.printStackTrace();
+        } finally {
+            try {
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Dumping done !");
     }
 }
