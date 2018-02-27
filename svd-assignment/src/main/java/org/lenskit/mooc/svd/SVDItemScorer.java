@@ -75,7 +75,9 @@ public class SVDItemScorer extends AbstractItemScorer {
         //DiagonalMatrix featureDiagMatrix = new DiagonalMatrix(model.getFeatureWeights().toArray());
         for(Long item : itemSet){
             RealVector itemFeatures = model.getItemVector(item);
-            double predictedVal = userFeatures.ebeMultiply(model.getFeatureWeights()).dotProduct(itemFeatures);
+//            double predictedVal = userFeatures.ebeMultiply(model.getFeatureWeights()).dotProduct(itemFeatures);
+            double predictedVal = userFeatures.dotProduct(itemFeatures);
+
             //adding baseline
             predictedVal+=(baseline.getIntercept() + baseline.getUserBias(user) + baseline.getItemBias(item));
             double popBlendedRating = (1 - model.getPopularityWeight())*predictedVal + model.getPopularityWeight()*model.getItemPopularity(item);

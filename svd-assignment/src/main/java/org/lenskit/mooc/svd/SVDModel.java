@@ -37,12 +37,12 @@ public class SVDModel implements Serializable {
      * @param itemPopularity1
      */
     SVDModel(KeyIndex umap, KeyIndex imap, RealMatrix umat, RealMatrix imat, RealVector weights, HashMap<Long, Double> itemPopularity1, double popWeight) {
-        Preconditions.checkArgument(umat.getColumnDimension() == weights.getDimension(),
-                "user matrix has incorrect column dimension (%s != %s)",
-                umat.getColumnDimension(), weights.getDimension());
-        Preconditions.checkArgument(imat.getColumnDimension() == weights.getDimension(),
-                "item matrix has incorrect column dimension (%s != %s)",
-                imat.getColumnDimension(), weights.getDimension());
+//        Preconditions.checkArgument(umat.getColumnDimension() == weights.getDimension(),
+//                "user matrix has incorrect column dimension (%s != %s)",
+//                umat.getColumnDimension(), weights.getDimension());
+//        Preconditions.checkArgument(imat.getColumnDimension() == weights.getDimension(),
+//                "item matrix has incorrect column dimension (%s != %s)",
+//                imat.getColumnDimension(), weights.getDimension());
         userMapping = umap;
         itemMapping = imap;
         userFeatureMatrix = umat;

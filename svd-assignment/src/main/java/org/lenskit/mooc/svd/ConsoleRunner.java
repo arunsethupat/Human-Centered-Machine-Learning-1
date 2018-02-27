@@ -24,6 +24,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
+import java.io.FileWriter;
 /**
  * Demonstration app for LensKit. This application builds an item-item CF model
  * from a CSV file, then generates recommendations for a user.
@@ -32,6 +33,11 @@ import java.util.*;
  */
 public class ConsoleRunner implements Runnable {
     private static final Logger logger = LoggerFactory.getLogger(ConsoleRunner.class);
+    HashMap<Long, Integer> itemFreq = new HashMap<>();
+    private static final String FILE_HEADER = "MovieId,Popularity,PopularityWeight,RecFrequency";
+    private static final String NEW_LINE_SEPARATOR = "\n";
+    private static final String COMMA_DELIMITER = ",";
+    private final String freqFileName = "itemFreq_40.csv";
 
     public static void main(String[] args) {
         ConsoleRunner hello = new ConsoleRunner(args);
@@ -75,6 +81,8 @@ public class ConsoleRunner implements Runnable {
         // Next: load the LensKit algorithm configuration
         LenskitConfiguration config = null;
         try {
+            //config = ConfigHelpers.load(new File("etc/svd.groovy"));
+//            config = ConfigHelpers.load(new File("etc/svd.groovy"));
             config = ConfigHelpers.load(new File("etc/svd.groovy"));
         } catch (IOException e) {
             throw new RuntimeException("could not load configuration", e);
@@ -100,25 +108,81 @@ public class ConsoleRunner implements Runnable {
             // for users
             //List<Rating> testRating = testDao.query(Rating.class).get();
             List<Rating> ratings = trainDao.query(Rating.class).get();
-            int numberOfUsers = 10;
 
             LongSet allUsers = trainDao.query(Rating.class).valueSet(CommonAttributes.USER_ID);
 
             for(Long testUser :allUsers){
-                if(numberOfUsers<1)
-                    break;
-                numberOfUsers--;
                 LongSet userRatedItems = trainDao.query(Rating.class).withAttribute(CommonAttributes.USER_ID, testUser).valueSet(CommonAttributes.ITEM_ID);
                 System.out.format("Recommendations for user %d:\n", testUser);
                 ResultList recs = irec.recommendWithDetails(testUser, 10, null, userRatedItems);
                 displayRecommendations(recs);
+                //updateFrequency(recs);
                 System.out.println("-------------------------------------------");
+                break;
             }
         }
+        System.out.println("Total Items ever recommended : "+itemFreq.size());
+//        writeHeader();
+//        writeFrequency();
     }
     private void displayRecommendations (ResultList recs){
         for(Result res : recs){
             System.out.println("Movie Id : "+res.getId() + "\tScore : "+res.getScore());
+        }
+    }
+
+    private void writeHeader(){
+        FileWriter writer = null;
+        try{
+            writer = new FileWriter(freqFileName, true);
+            writer.append(FILE_HEADER);
+            writer.append(NEW_LINE_SEPARATOR);
+        }catch (Exception ex){
+            System.out.println("Error while writing header into csv file");
+            ex.printStackTrace();
+        }finally {
+            try {
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void writeFrequency(){
+        System.out.println("Dumping item frequencies into CSV ...");
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(freqFileName, true);
+            for(Map.Entry<Long, Integer> itemEntry : itemFreq.entrySet()){
+                Long item = itemEntry.getKey();
+                Integer count = itemEntry.getValue();
+
+                writer.append(String.valueOf(item));
+                writer.append(COMMA_DELIMITER);
+                writer.append(String.valueOf(count));
+                writer.append(NEW_LINE_SEPARATOR);
+            }
+        } catch (Exception e) {
+            System.out.println("Error in CsvFileWriter !!!");
+            e.printStackTrace();
+        } finally {
+            try {
+                writer.flush();
+                writer.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("Dumping done !");
+    }
+    private void updateFrequency(ResultList recs){
+        for(Result res : recs){
+            Integer count = itemFreq.get(res.getId());
+            if(count == null)
+                count = 0;
+            itemFreq.put(res.getId(), count + 1);
         }
     }
 }

@@ -185,7 +185,12 @@ public class ILSMetric extends ListOnlyTopNMetric<ILSMetric.Context> {
 
     private Double calculateCosineSimilarity(RealVector targetVector, RealVector candidateVector){
         Double cosineValue = 0D;
-        cosineValue = targetVector.cosine(candidateVector);
+        try {
+            cosineValue = targetVector.cosine(candidateVector);
+        }
+        catch (Exception e){
+
+        }
         return cosineValue;
     }
 }
