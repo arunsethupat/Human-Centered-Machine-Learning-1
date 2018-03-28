@@ -28,6 +28,8 @@ import org.lenskit.data.dao.DataAccessObject;
 import org.lenskit.data.entities.CommonAttributes;
 import org.lenskit.data.ratings.Rating;
 import org.lenskit.mooc.svd.SVDModelBuilder.MyRating;
+import org.lenskit.util.keys.KeyIndex;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
@@ -46,8 +48,10 @@ public class MySingularValueDecomposition {
     RealMatrix originalMatrix;
     double[][] ratingData ;
     List<MyRating> ratingList;
-
-    public MySingularValueDecomposition(RealMatrix matrix, int featureCount, HashMap<Long, Double> itemPop, int noOfUsers, int noOfItems) {
+    KeyIndex itemIndex;
+    double TARGET_POP = 2.5;
+    public MySingularValueDecomposition(RealMatrix matrix, int featureCount, HashMap<Long, Double> itemPop, int noOfUsers, int noOfItems, KeyIndex itemIndex) {
+        this.itemIndex = itemIndex;
         this.ratingList = ratingList;
         this.itemPopularity = itemPop;
         this.featureCount = featureCount;
@@ -73,15 +77,18 @@ public class MySingularValueDecomposition {
 
     public void computeSVD(){
 
-        int MAX_ITERATION = 20000;
+        int MAX_ITERATION =45;
         double alpha = 0.002;
         double beta = 0.02;
         double error = 0.0;
         double totalerror = 0.0;
+        double weight = 1;
+        double totalObjective = 0.0;
         int count = 0;
         for(int step = 1; step <= MAX_ITERATION; step++){
             totalerror = 0.0;
             count = 0;
+            totalObjective = 0.0;
 //            for(MyRating ratingObject: ratingList){
 //                double rating = ratingObject.getRating();
 //                long userIndex = ratingObject.getUserId();
@@ -130,6 +137,7 @@ public class MySingularValueDecomposition {
             for(int i=0; i < ratingData.length; i++){
                 for(int j=0; j<ratingData[0].length; j++){
                     double rating = ratingData[i][j];
+                    double objective = 0.0;
                     if(rating != 0){
                         count++;
                         double[] u = userMatrix.getRow(i);
@@ -138,12 +146,19 @@ public class MySingularValueDecomposition {
                         error = rating - dotProduct(u,v);
                         totalerror += Math.pow(error,2);
                         //Math.pow(dotProduct(u, v), 2);
+                        long itemId = itemIndex.getKey(j);
+                        //weight = weight + alpha * (Math.pow(itemPopularity.get(itemId)-TARGET_POP, 2) - Math.pow(error , 2));
+
                         for(int k=0; k<featureCount; k++){
-                            u[k] = u[k] + alpha * (2 * error * v[k] - beta * u[k]);
-                            v[k] = v[k] + alpha * (2 * error * u[k] - beta * v[k]);
+                            u[k] = u[k] + alpha * (2 * weight * error * v[k] - beta * u[k]);
+                            v[k] = v[k] + alpha * (2 * weight * error * u[k] - beta * v[k]);
                         }
+
                         userMatrix.setRow(i, u);
                         itemMatrix.setRow(j, v);
+
+                        objective = weight * Math.pow(rating-dotProduct(u, v), 2) + (1 - weight) * Math.pow(itemPopularity.get(itemId) - TARGET_POP, 2);
+                        totalObjective += objective;
                     }
 //                    if(i==600)
 //                        System.out.format("\n Jhakkasi:%d  j:%d error :%f",i, j, error);
@@ -156,7 +171,7 @@ public class MySingularValueDecomposition {
 //                        }
 //                    }
                 }
-//                System.out.format("\n i:%d  error :%f",i, totalerror);
+                System.out.format("\n i:%d  Objective :%f  weight : %f",i, totalObjective, weight);
 
 
             }
