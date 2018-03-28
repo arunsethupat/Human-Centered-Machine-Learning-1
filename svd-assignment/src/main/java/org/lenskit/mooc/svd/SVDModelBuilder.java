@@ -69,10 +69,10 @@ public class SVDModelBuilder implements Provider<SVDModel> {
 //        List<MyRating> ratingList = createRatingMatrix(userIndex, itemIndex, itemPopularity);
         // Second, compute its factorization
         logger.info("factorizing matrix at popularity weight : "+popularityWeight);
-        MySingularValueDecomposition svd = new MySingularValueDecomposition(matrix, featureCount, itemPopularity, noOfUsers, noOfItems);
+        MySingularValueDecomposition svd = new MySingularValueDecomposition(matrix, featureCount, itemPopularity, noOfUsers, noOfItems, itemIndex);
         RealMatrix userMatrix = svd.getUserMatrix();
         RealMatrix itemMatrix = svd.getItemMatrix();
-        RealVector weights = MatrixUtils.createRealVector(new double[25]);
+        RealVector weights = MatrixUtils.createRealVector(new double[featureCount]);
 
 
 //        SingularValueDecomposition svd = new SingularValueDecomposition(matrix);
